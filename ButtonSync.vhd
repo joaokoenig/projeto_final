@@ -3,8 +3,8 @@ use ieee.std_logic_1164.all;
 
 entity ButtonSync is port(
 
-    KEY1, KEY0, CLK: in  std_logic;
-    BTN1, BTN0   : out std_logic);
+    KEY0, KEY1, CLK: in  std_logic;
+    Enter, Reset   : out std_logic);
 
 end ButtonSync;
 
@@ -12,8 +12,8 @@ end ButtonSync;
 architecture ButtonSyncImpl of ButtonSync is
 
 type STATES is (EsperaApertar, SaidaAtiva, EsperaSoltar);
-signal BTN1_state, BTN0_state: STATES := EsperaApertar;
-signal BTN1_next, BTN0_next: STATES := EsperaApertar;
+signal Enter_state, Reset_state: STATES := EsperaApertar;
+signal Enter_next, Reset_next: STATES := EsperaApertar;
 
 begin
 
@@ -21,40 +21,40 @@ begin
 	process (clk) 
 	begin
 		if clk'event and clk = '1' then
-			BTN1_state <= BTN1_next;
-			BTN0_state <= BTN0_next;
+			Enter_state <= Enter_next;
+			Reset_state <= Reset_next;
 		end if;
 	end process;
 	
 	
-	process (key0, BTN0_state)
+	process (key0, Reset_state)
 	begin
-		case BTN0_state is
+		case Reset_state is
 			when EsperaApertar =>
-				if key0 = '0' then BTN0_next <= SaidaAtiva; else BTN0_next <= EsperaApertar; end if;
-				BTN0 <= '0';
+				if key0 = '0' then Reset_next <= SaidaAtiva; else Reset_next <= EsperaApertar; end if;
+				Reset <= '0';
 			when SaidaAtiva =>
-				if key0 = '0' then BTN0_next <= EsperaSoltar; else BTN0_next <= EsperaApertar; end if;	
-				BTN0 <= '1';
+				if key0 = '0' then Reset_next <= EsperaSoltar; else Reset_next <= EsperaApertar; end if;	
+				Reset <= '1';
 			when EsperaSoltar =>
-				if key0 = '0' then BTN0_next <= EsperaSoltar;	else BTN0_next <= EsperaApertar; end if;	
-				BTN0 <= '0';
+				if key0 = '0' then Reset_next <= EsperaSoltar;	else Reset_next <= EsperaApertar; end if;	
+				Reset <= '0';
 		end case;		
 	end process;
 	
 	
-	process (key1, BTN1_state)
+	process (key1, Enter_state)
 	begin
-		case BTN1_state is
+		case Enter_state is
 			when EsperaApertar =>
-				if key1 = '0' then BTN1_next <= SaidaAtiva; else BTN1_next <= EsperaApertar; end if;
-				BTN1 <= '0';
+				if key1 = '0' then Enter_next <= SaidaAtiva; else Enter_next <= EsperaApertar; end if;
+				Enter <= '0';
 			when SaidaAtiva =>
-				if key1 = '0' then BTN1_next <= EsperaSoltar; else BTN1_next <= EsperaApertar; end if;	
-				BTN1 <= '1';
+				if key1 = '0' then Enter_next <= EsperaSoltar; else Enter_next <= EsperaApertar; end if;	
+				Enter <= '1';
 			when EsperaSoltar =>
-				if key1 = '0' then BTN1_next <= EsperaSoltar;	else BTN1_next <= EsperaApertar; end if;	
-				BTN1 <= '0';
+				if key1 = '0' then Enter_next <= EsperaSoltar;	else Enter_next <= EsperaApertar; end if;	
+				Enter <= '0';
 		end case;		
 	end process;
 

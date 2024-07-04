@@ -19,15 +19,13 @@ begin
     process (Clock, Set, Enable)
     begin
         if (Set='1') then
-            counter <= "1111";
-            --counter <= "0011";
-
+            counter <= "0000";
         elsif(Clock'event and Clock='1') then
             if(Enable='1') then
-                if(counter < "0001") then 
+                if(counter = "1111") then 
                     end_round <= '1';
                 else
-                    counter <= counter - '1';
+                    counter <= counter + '1';
                     end_round <= '0';
                 end if;
             end if;
@@ -37,5 +35,3 @@ begin
     X <= counter;
 
 end arqround;
-
-

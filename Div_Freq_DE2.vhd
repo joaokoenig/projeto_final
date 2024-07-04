@@ -7,7 +7,7 @@ use ieee.std_logic_unsigned.all;
 entity Div_Freq_DE2 is
 	port (	    clk: in std_logic;
 				reset: in std_logic;
-				CLK_1Hz, sim_2hz: out std_logic
+				CLK_1Hz: out std_logic
 			);
 end Div_Freq_DE2;
 
@@ -21,27 +21,18 @@ architecture divisor of Div_Freq_DE2 is
 			 if reset= '1' then
 				 cont <= x"0000000";
 				 CLK_1Hz <= '0';
-				 sim_2hz <= '0';
 				 
 			 elsif clk'event and clk = '1' then
 
 				
 				--1Hz = 1s = 50.000.000Hz = 50.000.000
-				if cont < x"17D783F" then  --se contador < 24.999.999 (17D783F em hexadecimal)
-					--CLK_1Hz <= '1';
-					cont <= cont + 1;
-					sim_2hz <= '0';
-					clk_1Hz <='0';
-					
-				elsif cont < x"2FAF07F" then  --se contador < 49.999.999 (2FAF07F em hexadecimal)
+				if cont < x"2FAF07F" then  --se contador < 49.999.999 (2FAF07F em hexadecimal)
 					CLK_1Hz <= '0';
 					cont <= cont + 1;
-					sim_2hz <= '1';
-				
+					
 				else  
 					cont <= x"0000000";
 					CLK_1Hz <= '1';
-					sim_2hz <= '1';
 					
 				end if;
 			 end if;
