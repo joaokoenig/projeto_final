@@ -15,3 +15,4 @@ architecture arqdtp of comparador is
     S <= '1' when (in0 = in1) else '0';
 
 end arqdtp;
+-- bashbaubod
