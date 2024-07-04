@@ -1,181 +1,132 @@
 library ieee;
 use ieee.std_logic_1164.all;
-use IEEE.std_logic_arith.all;
-use IEEE.std_logic_unsigned.all;
 
-entity datapath is 
-port (S: in std_logic_vector(15 downto 0); -- dos switches
-      clk,R1,R2,E1,E2,E3,E4,E5: in std_logic;
-      end_game, end_time, end_round: out std_logic;
-		HEX7,HEX6,HEX5,HEX4,HEX3,HEX2,HEX1,HEX0: out std_logic_vector(6 downto 0);
-		LED:out std_logic_vector(15 downto 0));
-end datapath;
+entity controle is port(clock, enter, reset: in std_logic; --btn 1 é enter
+end_game, end_sequence, end_round: in std_logic;
+R1, E1, E2, E3, E4, E5, E6: out std_logic);
 
-architecture arqdtp of datapath is
-signal SEL_MUX: std_logic_vector(1 downto 0);
-signal Y,temp,X,Xb,Q,Q1,PREG,EREG,SELECC: std_logic_vector(3 downto 0);
-signal RESULT: std_logic_vector(7 downto 0);
-signal P,P_REG,E,E_REG,v0,v1,v2,v3: std_logic_vector(2 downto 0);
-signal SW50,SEL: std_logic_vector(5 downto 0);
-signal SW150,USER,CODE,LEDR150,Z,m0,m1,m2,m3: std_logic_vector(15 downto 0);
-signal A,B,C,D,V,F,G,H,I,J,K,L,M,N,O,ma,mb,mc,md,me,mf,mg,mh,t: std_logic_vector(6 downto 0);
-signal clk1,rst_divfreq,endgame,endtime: std_logic;
+end controle;
 
-component somadormenor is
-port (A: in  std_logic_vector(3 downto 0);
-		B: in  std_logic_vector(3 downto 0);
-		F: out  std_logic_vector(3 downto 0));
-end component;
+architecture arc_controle of controle is
 
-component somadormaior is
-port (A: in  std_logic_vector(2 downto 0);
-		B: in  std_logic_vector(2 downto 0);
-		C: in  std_logic_vector(2 downto 0);
-		D: in  std_logic_vector(2 downto 0);
-		F: out  std_logic_vector(2 downto 0));
-end component;
-
-component selector is 
-port(in0, in1, in2, in3: in  std_logic;
-     saida: out std_logic_vector(1 downto 0));    
-end component;
-
-component ROM3 is 
-port(address : in  std_logic_vector(3 downto 0);
-     data: out std_logic_vector(15 downto 0));
-end component;
-
-component ROM2 is 
-port(address : in  std_logic_vector(3 downto 0);
-     data: out std_logic_vector(15 downto 0));    
-end component;
-
-component ROM1 is 
-port(address : in  std_logic_vector(3 downto 0);
-     data: out std_logic_vector(15 downto 0));
-end component;
-
-component ROM0 is 
-port(address : in  std_logic_vector(3 downto 0);
-     data: out std_logic_vector(15 downto 0));
-end component;
-
-component registrador16 is 
-port (CLK, RST, EN: in std_logic; 
-		D: in std_logic_vector(15 downto 0); 
-		Q: out std_logic_vector(15 downto 0)); 
-end component;
-
-component registrador6 is 
-port (CLK, RST, EN: in std_logic; 
-		D: in std_logic_vector(5 downto 0); 
-		Q: out std_logic_vector(5 downto 0) ); 
-end component;
-
-component registrador3 is 
-port (CLK, RST, EN: in std_logic; 
-		D: in std_logic_vector(2 downto 0); 
-		Q: out std_logic_vector(2 downto 0)); 
-end component;
-
-component registrador is 
-port (CLK, RST, EN: in std_logic; 
-		D: in std_logic_vector(3 downto 0); 
-		Q: out std_logic_vector(3 downto 0) ); 
-end component;
-
-component multiplexador74 is	
-port (F1: in  std_logic_vector(6 downto 0);
-		F2: in  std_logic_vector(6 downto 0);
-		F3: in  std_logic_vector(6 downto 0);
-		F4: in  std_logic_vector(6 downto 0);
-		sel: in  std_logic_vector(1 downto 0);
-		F: out  std_logic_vector(6 downto 0));
-end  component;
-
-component multiplexador72 is	
-port (F1: in  std_logic_vector(6 downto 0);
-		F2: in  std_logic_vector(6 downto 0);
-		sel: in  std_logic;
-		F: out  std_logic_vector(6 downto 0));
-end component;
-
-component multiplexador16 is	
-port (F1: in  std_logic_vector(15 downto 0);
-		F2: in  std_logic_vector(15 downto 0);
-		F3: in  std_logic_vector(15 downto 0);
-		F4: in  std_logic_vector(15 downto 0);
-		sel: in  std_logic_vector(1 downto 0);
-		F: out  std_logic_vector(15 downto 0));
-end component;
-
-component decodtermo is
-port (X: in  std_logic_vector(3 downto 0);
-		S: out std_logic_vector(15 downto 0));
-end component;
-
-component decod7seg is
-port (G: in  std_logic_vector(3 downto 0);
-		S: out std_logic_vector(6 downto 0));
-end component;
-
-component counter_time is 
-port( R: in std_logic;
-		clock: in std_logic;
-		E: in std_logic;
-		tempo: out std_logic_vector(3 downto 0);
-		fim_tempo: out std_logic);
-end component;
-
-component counter_round is 
-port(R: in std_logic;
-	  E : in std_logic;
-	  clock: in std_logic;
-	  end_round: out std_logic;
-	  X : out std_logic_vector(3 downto 0));
-end component;
-
-component comp4 IS
-PORT (P: IN STD_LOGIC_VECTOR(2 DOWNTO 0) ;
-		Peq4: OUT STD_LOGIC ) ;
-END component;
-
-component comp_n is 
-port(c, u: in  std_logic_vector(3 downto 0);
-     P0: out std_logic_vector(2 downto 0));
-end component;
-
-component comp_e is 
-port(inc, inu: in  std_logic_vector(15 downto 0);
-     E: out std_logic_vector(2 downto 0));
-end component;
-
-component ButtonSync is 
-port(KEY0, KEY1, CLK: in  std_logic;
-     Enter, Reset   : out std_logic);
-end component;
-
-component Div_Freq_DE2 is -- Usar esse componente para a placa DE2
-port (	clk: in std_logic;
-	reset: in std_logic;
-	CLK_1Hz: out std_logic
-	);
-end component;
-
-component Div_Freq is -- Usar esse componente para o emulador
-port (	clk: in std_logic;
-	reset: in std_logic;
-	CLK_1Hz, sim_2hz: out std_logic
-	);
-end component;
-
+    type STATES is (Init, Setup, Selec, Sequence, Play, Check, Result);
+    signal EstadoAtual, ProximoEstado: STATES := Init; -- O sistema começa no estado Init
+   
+   
 begin
 
---	DIVFREQ_EMU: div_freq port map (clk, R1, clk1);	-- usar esse componente para o emulador
-	DIVFREQ: div_Freq_DE2 port map(clk, R1, clk1); -- usar esse componente para a placa	
-	SELEC: selector port map (E1,E2,R1,E5,SEL_MUX);
-        COMPE: comp_e port map (CODE,USER,E);
-	
-	-- A fazer pelo aluno
-	
-end arqdtp;
+    process(clock, reset)
+    begin
+   
+        if reset = '1' then
+            EstadoAtual <= Init;
+        elsif (clock'event and clock = '1') then
+            EstadoAtual <= ProximoEstado;
+        end if;
+   
+    end process;
+
+process(EstadoAtual, enter, end_game, end_sequence, end_round)
+    begin
+   
+        case EstadoAtual is
+            when Init => ProximoEstado
+            <= Setup; -- Init vai direto para Setup
+                R1 <= '1';
+                E1 <= '0';
+                E2 <= '0';
+                E3 <= '0';
+                E4 <= '0';
+                E5 <= '0';
+                E6 <= '0';
+           
+            when Setup =>
+                if enter = '1' then
+                    ProximoEstado <= Selec; -- Vai para o estado Select quando enter for pressionado
+                else
+                    ProximoEstado <= Setup; -- Senão, fica no Setup
+                end if;
+                R1 <= '0';
+                E1 <= '1';
+                E2 <= '0';
+                E3 <= '0';
+                E4 <= '0';
+                E5 <= '0';
+                E6 <= '0';
+               
+            when Selec =>
+                if (enter = '1') then
+                    ProximoEstado <= Sequence; --Vai para o Sequence
+                else
+                    ProximoEstado <= Selec;
+                end if;
+                R1 <= '0';
+                E1 <= '0';
+                E2 <= '1';
+                E3 <= '0';
+                E4 <= '0';
+                E5 <= '0';
+                E6 <= '0';
+           
+            when Sequence =>
+                if (end_sequence = '1') then  -- Depois que mostrou sequencia de 4 valores, o end_sequence = 1, logo
+                    ProximoEstado <= Play;    -- Vai para o Play
+                else
+                    ProximoEstado <= Sequence; -- Senão, fica em Sequence
+                end if;
+                R1 <= '0';
+                E1 <= '0';
+                E2 <= '0';
+                E3 <= '1';
+                E4 <= '0';
+                E5 <= '0';
+                E6 <= '0';
+           
+            when Play =>
+                if (enter = '1') then
+                    ProximoEstado <= Check; -- Com enter vai para o Check
+                else
+                    ProximoEstado <= Play; -- Senão, fica em Play
+                end if;
+                R1 <= '0';
+                E1 <= '0';
+                E2 <= '0';
+                E3 <= '0';
+                E4 <= '1';
+                E5 <= '0';
+                E6 <= '0';
+           
+            when Check =>
+                if (end_round = '1' or end_game = '1') then
+                    ProximoEstado <= Result;  -- Se foi verificado que o jogo/partida acabou, vai para Result
+                else
+                    ProximoEstado <= selec; -- Senão, fica no Check --Não faz sentido ficar no Check, não?
+                end if;
+                R1 <= '0';
+                E1 <= '0';
+                E2 <= '0';
+                E3 <= '0';
+                E4 <= '0';
+                E5 <= '1';
+                E6 <= '0';
+           
+            when Result =>
+                if (enter = '1') then
+                    ProximoEstado <= Init; -- Se enter, vai para Init
+                else
+                    ProximoEstado <= Result; -- Senão, fica em Result
+                end if;
+                R1 <= '0';
+                E1 <= '0';
+                E2 <= '0';
+                E3 <= '0';
+                E4 <= '0';
+                E5 <= '0';
+                E6 <= '1';
+               
+        end case;
+       
+    end process;
+
+
+end arc_controle;    
